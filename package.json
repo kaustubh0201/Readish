@@ -4,6 +4,7 @@
   "description": "An in-memory key-value database, cache and message broker.",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,6 +18,6 @@
   },
   "homepage": "https://github.com/kaustubh0201/Readish#readme",
   "dependencies": {
-    "redis-parser": "^3.0.0"
+    "nodemon": "^3.1.0"
   }
 }

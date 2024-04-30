@@ -1,16 +1,16 @@
 const net  = require('net');
-const Parser = require('redis-parser');
 const { setCommand } = require('./commands/set');
 const { getCommand } = require('./commands/get');
 const { pingCommand } = require('./commands/ping');
 const { store } = require('./storage/store');
+const { RedisParser } = require('./parser/redis-parser');
 
 // TCP Server
 const server = net.createServer(connection => {
     console.log('Readish client connected.');
 
     connection.on('data', data => {
-        const parser = new Parser({
+        const parser = new RedisParser({
             returnReply: (reply) => {
                 const command = reply[0];
                 
@@ -22,9 +22,17 @@ const server = net.createServer(connection => {
                     break;
 
                     case 'ping': pingCommand(connection);
+                    break;
+
+                    default: {
+                        let err = 'Command Not Found! Please try again!';
+                        connection.write(`$${err.length}\r\n${err}\r\n`);
+                    }
+                        
                 }
             },
             returnError: (err) => {
+                connection.write(`$${err.length}\r\n${err}\r\n`);
                 console.log('=>', err);
             }
         });
