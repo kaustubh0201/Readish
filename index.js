@@ -1,7 +1,7 @@
 const net  = require('net');
 const Parser = require('redis-parser');
-
-const store = {};
+const { setCommand } = require('./commands/set');
+const { store } = require('./storage/store');
 
 // TCP Server
 const server = net.createServer(connection => {
@@ -13,13 +13,7 @@ const server = net.createServer(connection => {
                 const command = reply[0];
                 
                 switch (command) {
-                    case 'set': {
-                        const key = reply[1];
-                        const value = reply[2];
-                        store[key] = value;
-                        connection.write('+OK\r\n');
-                    }
-
+                    case 'set': setCommand(store, reply, connection);
                     break;
 
                     case 'get': {
@@ -38,7 +32,6 @@ const server = net.createServer(connection => {
         });
 
         parser.execute(data);
-        // connection.write('+OK\r\n');
     });
 });
 
