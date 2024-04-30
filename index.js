@@ -2,6 +2,7 @@ const net  = require('net');
 const Parser = require('redis-parser');
 const { setCommand } = require('./commands/set');
 const { getCommand } = require('./commands/get');
+const { pingCommand } = require('./commands/ping');
 const { store } = require('./storage/store');
 
 // TCP Server
@@ -19,6 +20,8 @@ const server = net.createServer(connection => {
 
                     case 'get': getCommand(store, reply, connection);
                     break;
+
+                    case 'ping': pingCommand(connection);
                 }
             },
             returnError: (err) => {
