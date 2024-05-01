@@ -2,8 +2,9 @@ class RedisParser {
     
     constructor (options) {
         
-        const { returnReply, returnError } = options;
+        const { connection, returnReply, returnError } = options;
 
+        this.connection = connection;
         this.returnReply = returnReply;
         this.returnError = returnError;
         
@@ -21,7 +22,7 @@ class RedisParser {
                     replyArr.push(dataArray[2*i]);
                 }
 
-                this.returnReply(replyArr);
+                this.returnReply(replyArr, this.connection);
             }
             break;
 
