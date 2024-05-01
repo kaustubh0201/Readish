@@ -17,10 +17,9 @@ const returnReply = (reply, connection) => {
         break;
 
         default: {
-            let err = 'Command Not Found! Please try again!';
+            let err = '(error) ERR cmd not found';
             connection.write(`$${err.length}\r\n${err}\r\n`);
         }
-            
     }
 };
 

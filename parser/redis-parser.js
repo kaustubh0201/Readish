@@ -27,7 +27,7 @@ class RedisParser {
             break;
 
             default: {
-                this.returnError('Command Not Found! Please try again!');
+                this.returnError('(error) ERR cmd not found');
             }
         }
     }
