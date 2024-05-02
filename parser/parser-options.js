@@ -17,15 +17,14 @@ const returnReply = (reply, connection) => {
         break;
 
         default: {
-            let err = '(error) ERR cmd not found';
-            connection.write(`$${err.length}\r\n${err}\r\n`);
+            let err = 'ERR cmd not found';
+            connection.write(`-${err}\r\n`);
         }
     }
 };
 
 const returnError = (err) => {
-    connection.write(`$${err.length}\r\n${err}\r\n`);
-    console.log('=>', err);
+    connection.write(`-${err}\r\n`);
 };
 
 module.exports = {
