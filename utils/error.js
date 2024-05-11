@@ -8,5 +8,6 @@ const writeError = (connection, err) => {
 }
 
 module.exports = {
-    writeSyntaxError
+    writeSyntaxError,
+    writeError
 };
