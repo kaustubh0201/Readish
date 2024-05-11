@@ -3,6 +3,12 @@ const { writeSyntaxError, writeError } = require('../utils/error');
 const { isStringAnInteger } = require('../utils/util');
 const { writeOkayMessage, writeNullMessage } = require('../utils/message');
 
+const EX = 'EX';
+const PX = 'PX';
+const NX = 'NX';
+const XX = 'XX';
+const KEEPTTL = 'KEEPTTL';
+
 const setCommand = (store, reply, connection) => {
 
     const key = reply[1];
@@ -20,11 +26,11 @@ const setCommand = (store, reply, connection) => {
 
     const setOpOptions = {};
     for (let i = 3; i < reply.length; i++) {
-        if (reply[i] === 'EX' || reply[i] === 'PX') {
+        if (reply[i] === EX || reply[i] === PX) {
             setOpOptions[reply[i]] = reply[i + 1];
         } else {
             if (!isStringAnInteger(reply[i])) {
-                setOpOptions[reply[i]] = null;
+                setOpOptions[reply[i]] = true;
             }
         }
     }
@@ -32,31 +38,45 @@ const setCommand = (store, reply, connection) => {
     console.log(setOpOptions);
 
     if (Object.keys(setOpOptions).length === 0) {
-        store[key] = value;
+        store[key] = [value, null];
+        console.log(store);
         writeOkayMessage(connection);
         return;
     }
 
-    if (setOpOptions['NX'] && setOpOptions['XX']) {
+    if (setOpOptions[NX] && setOpOptions[XX]) {
         writeSyntaxError(connection);
         return;
     }
 
-    if (setOpOptions['EX'] && setOpOptions['PX']) {
+    if (setOpOptions[EX] && setOpOptions[PX]) {
         writeSyntaxError(connection);
         return;
     }
 
-    const timeOption = setOpOptions['EX'] ? 'EX' : setOpOptions['PX'] ? 'PX' : null;
+    const timeOption = setOpOptions[EX] ? EX : setOpOptions[PX] ? PX : null;
     
-    if (setOpOptions['NX'] && store.hasOwnProperty(key)) {
+    if (setOpOptions[NX] && store.hasOwnProperty(key)) {
         writeNullMessage(connection);
         return;
-    } else if (setOpOptions['XX'] && !store.hasOwnProperty(key)) {
+    } else if (setOpOptions[XX] && !store.hasOwnProperty(key)) {
         writeNullMessage(connection);
         return;
     } else {
-        store[key] = value;
+        // case: when the timeout is changed 
+        if (store.hasOwnProperty(key) && store[key][1] !== null && !setOpOptions[KEEPTTL]) {
+            const presentTimeoutId = store[key][1];
+            clearTimeout(presentTimeoutId);
+        }
+        
+        // logic for storing the key - value
+        if (store.hasOwnProperty(key) && setOpOptions[KEEPTTL]) {
+            const presentTimeoutId = store[key][1];
+            store[key] = [value, presentTimeoutId];
+        } else {
+            store[key] = [value, null];
+        }
+        
         if (!timeOption) {
             writeOkayMessage(connection);
             return;
@@ -65,17 +85,20 @@ const setCommand = (store, reply, connection) => {
 
     if (timeOption && isStringAnInteger(setOpOptions[timeOption])) {
         const time = parseInt(setOpOptions[timeOption], 10);
-        setTimeout(removeFromStore, timeOption === 'EX' ? time * 1000 : time, key, store);
+        const timeoutId = setTimeout(removeFromStore, timeOption === EX ? time * 1000 : time, key, store);
+        store[key] = [value, timeoutId];
         writeOkayMessage(connection);
     }
     
 };
 
 const checkOptions = (reply) => {
-    const validOptions = ['NX', 'XX', 'EX', 'PX'];
+    const validOptions = [NX, XX, EX, PX, KEEPTTL];
 
     let integerCounter = 0;
-    let EXPXPresent = false;
+    let isEXPXPresent = false;
+    let isKEEPTTLPresent = false;
+
 
     for (let i = 0; i < reply.length; i++) {
 
@@ -84,9 +107,13 @@ const checkOptions = (reply) => {
             return false;
         }
 
+        if (reply[i] === KEEPTTL) {
+            isKEEPTTLPresent = true;
+        }
+
         // case: checking if the integer is only after the EX or PX as it is for time
-        if (reply[i] === 'EX' || reply[i] === 'PX') {
-            EXPXPresent = true;
+        if (reply[i] === EX || reply[i] === PX) {
+            isEXPXPresent = true;
             if (i + 1 >= reply.length) {
                 return false;
             } else if (!isStringAnInteger(reply[i + 1])) {
@@ -101,9 +128,14 @@ const checkOptions = (reply) => {
                 return false;
             }
         }
+
+        // case: if KEEPTTL and EX or PX is present simultaneously
+        if (isEXPXPresent && isKEEPTTLPresent) {
+            return false;
+        }
         
         // case: EX or PX not present but integer present
-        if (EXPXPresent == false && integerCounter > 0) {
+        if (isEXPXPresent === false && integerCounter > 0) {
             return false;
         }
     }
