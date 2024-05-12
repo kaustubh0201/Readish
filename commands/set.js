@@ -1,4 +1,4 @@
-const { removeFromStore } = require('../storage/store');
+const { removeFromStore, setInStore, checkKeyAvailable, getTimeoutIdFromKey, clearTimeoutId } = require('../storage/store');
 const { writeSyntaxError, writeError } = require('../utils/error');
 const { isStringAnInteger } = require('../utils/util');
 const { writeOkayMessage, writeNullMessage } = require('../utils/message');
@@ -9,7 +9,7 @@ const NX = 'NX';
 const XX = 'XX';
 const KEEPTTL = 'KEEPTTL';
 
-const setCommand = (store, reply, connection) => {
+const setCommand = (reply, connection) => {
 
     const key = reply[1];
     const value = reply[2];
@@ -38,8 +38,7 @@ const setCommand = (store, reply, connection) => {
     console.log(setOpOptions);
 
     if (Object.keys(setOpOptions).length === 0) {
-        store[key] = [value, null];
-        console.log(store);
+        setInStore(key, value, null);
         writeOkayMessage(connection);
         return;
     }
@@ -56,25 +55,24 @@ const setCommand = (store, reply, connection) => {
 
     const timeOption = setOpOptions[EX] ? EX : setOpOptions[PX] ? PX : null;
     
-    if (setOpOptions[NX] && store.hasOwnProperty(key)) {
+    if (setOpOptions[NX] && checkKeyAvailable(key)) {
         writeNullMessage(connection);
         return;
-    } else if (setOpOptions[XX] && !store.hasOwnProperty(key)) {
+    } else if (setOpOptions[XX] && !checkKeyAvailable(key)) {
         writeNullMessage(connection);
         return;
     } else {
         // case: when the timeout is changed 
-        if (store.hasOwnProperty(key) && store[key][1] !== null && !setOpOptions[KEEPTTL]) {
-            const presentTimeoutId = store[key][1];
-            clearTimeout(presentTimeoutId);
+        if (checkKeyAvailable(key) && getTimeoutIdFromKey(key) !== null && !setOpOptions[KEEPTTL]) {
+            clearTimeoutId(key);
         }
         
         // logic for storing the key - value
-        if (store.hasOwnProperty(key) && setOpOptions[KEEPTTL]) {
-            const presentTimeoutId = store[key][1];
-            store[key] = [value, presentTimeoutId];
+        if (checkKeyAvailable(key) && setOpOptions[KEEPTTL]) {
+            const presentTimeoutId = getTimeoutIdFromKey(key);
+            setInStore(key, value, presentTimeoutId);
         } else {
-            store[key] = [value, null];
+            setInStore(key, value, null);
         }
         
         if (!timeOption) {
@@ -85,8 +83,8 @@ const setCommand = (store, reply, connection) => {
 
     if (timeOption && isStringAnInteger(setOpOptions[timeOption])) {
         const time = parseInt(setOpOptions[timeOption], 10);
-        const timeoutId = setTimeout(removeFromStore, timeOption === EX ? time * 1000 : time, key, store);
-        store[key] = [value, timeoutId];
+        const timeoutId = setTimeout(removeFromStore, timeOption === EX ? time * 1000 : time, key);
+        setInStore(key, value, timeoutId);
         writeOkayMessage(connection);
     }
     

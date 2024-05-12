@@ -1,19 +1,22 @@
-const { store } = require('../storage/store');
 const { setCommand } = require('../commands/set');
 const { getCommand } = require('../commands/get');
 const { pingCommand } = require('../commands/ping');
+const { delCommand } = require('../commands/del');
 
 const returnReply = (reply, connection) => {
     const command = reply[0];
     
     switch (command) {
-        case 'set': setCommand(store, reply, connection);
+        case 'set': setCommand(reply, connection);
         break;
 
-        case 'get': getCommand(store, reply, connection);
+        case 'get': getCommand(reply, connection);
         break;
 
         case 'ping': pingCommand(connection);
+        break;
+
+        case 'del': delCommand(reply, connection);
         break;
 
         default: {
