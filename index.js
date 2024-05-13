@@ -1,6 +1,6 @@
 const net  = require('net');
-const { RedisParser } = require('./parser/redis-parser');
-const { returnReply, returnError } = require('./parser/parser-options');
+const { RedisParser } = require('./src/parser/redis-parser');
+const { returnReply, returnError } = require('./src/parser/parser-options');
 
 // TCP Server
 const server = net.createServer(connection => {
