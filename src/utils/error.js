@@ -4,6 +4,10 @@ const writeSyntaxError = (connection) => {
 }
 
 const writeError = (connection, err) => {
+    if (err == null) {
+        console.log('Received null value');
+        return;
+    }
     connection.write(`-${err}\r\n`);
 }
 

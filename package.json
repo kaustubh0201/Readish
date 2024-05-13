@@ -19,5 +19,8 @@
   "homepage": "https://github.com/kaustubh0201/Readish#readme",
   "dependencies": {
     "nodemon": "^3.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
