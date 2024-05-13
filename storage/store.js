@@ -56,13 +56,18 @@ const getValArray = (key) => {
     return store[key];
 }
 
+const getAllKeys = () => {
+    const keyArr = Object.keys(store);
+    return keyArr;
+}
+
 module.exports = {
-    store,
     removeFromStore,
     removeFromStoreAndRemoveTimer,
     setInStore,
     checkKeyAvailable,
     getTimeoutIdFromKey,
     clearTimeoutId,
-    getValArray
+    getValArray,
+    getAllKeys
 };

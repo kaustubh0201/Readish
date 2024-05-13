@@ -2,9 +2,10 @@ const { setCommand } = require('../commands/set');
 const { getCommand } = require('../commands/get');
 const { pingCommand } = require('../commands/ping');
 const { delCommand } = require('../commands/del');
+const { keysCommand } = require('../commands/keys');
 
 const returnReply = (reply, connection) => {
-    const command = reply[0];
+    const command = reply[0].toLowerCase();
     
     switch (command) {
         case 'set': setCommand(reply, connection);
@@ -17,6 +18,9 @@ const returnReply = (reply, connection) => {
         break;
 
         case 'del': delCommand(reply, connection);
+        break;
+
+        case 'keys': keysCommand(reply, connection);
         break;
 
         default: {

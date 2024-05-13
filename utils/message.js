@@ -18,9 +18,14 @@ const writeInteger = (connection, number) => {
     connection.write(`:${number}\r\n`);
 }
 
+const write = (connection, mssg) => {
+    connection.write(mssg);
+}
+
 module.exports = {
     writeOkayMessage,
     writeNullMessage,
     bulkStringMessage,
-    writeInteger
+    writeInteger,
+    write
 };
