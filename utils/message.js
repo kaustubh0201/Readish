@@ -14,8 +14,13 @@ const bulkStringMessage = (connection, mssg) => {
     connection.write(`$${mssg.length}\r\n${mssg}\r\n`);
 }
 
+const writeInteger = (connection, number) => {
+    connection.write(`:${number}\r\n`);
+}
+
 module.exports = {
     writeOkayMessage,
     writeNullMessage,
-    bulkStringMessage
+    bulkStringMessage,
+    writeInteger
 };
