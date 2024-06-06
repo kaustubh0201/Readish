@@ -27,7 +27,7 @@ class RedisParser {
             break;
 
             default: {
-                this.returnError('ERR cmd not found');
+                this.returnError('ERR cmd not found', this.connection);
             }
         }
     }

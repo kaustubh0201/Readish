@@ -3,6 +3,7 @@ const { getCommand } = require('../commands/get');
 const { pingCommand } = require('../commands/ping');
 const { delCommand } = require('../commands/del');
 const { keysCommand } = require('../commands/keys');
+const { writeError } = require('../utils/error');
 
 const returnReply = (reply, connection) => {
     const command = reply[0].toLowerCase();
@@ -25,13 +26,13 @@ const returnReply = (reply, connection) => {
 
         default: {
             let err = 'ERR cmd not found';
-            connection.write(`-${err}\r\n`);
+            writeError(connection, err);
         }
     }
 };
 
-const returnError = (err) => {
-    connection.write(`-${err}\r\n`);
+const returnError = (err, connection) => {
+    writeError(connection, err);
 };
 
 module.exports = {
