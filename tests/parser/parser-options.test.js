@@ -22,37 +22,37 @@ describe('returnReply', () => {
         };
     });
 
-    it('callingSetCommand', () => {
+    test('callingSetCommand', () => {
         const reply = ['set', 'key', 'value'];
         returnReply(reply, connection);
         expect(setCommand).toHaveBeenCalledWith(reply, connection);
     });
 
-    it('callingGetCommand', () => {
+    test('callingGetCommand', () => {
         const reply = ['get', 'key'];
         returnReply(reply, connection);
         expect(getCommand).toHaveBeenCalledWith(reply, connection);
     });
 
-    it('callingPingCommand', () => {
+    test('callingPingCommand', () => {
         const reply = ['ping'];
         returnReply(reply, connection);
         expect(pingCommand).toHaveBeenCalledWith(connection);
     });
 
-    it('callingDelCommand', () => {
+    test('callingDelCommand', () => {
         const reply = ['del', 'key'];
         returnReply(reply, connection);
         expect(delCommand).toHaveBeenCalledWith(reply, connection);
     });
 
-    it('callingKeysCommand', () => {
+    test('callingKeysCommand', () => {
         const reply = ['keys', '*'];
         returnReply(reply, connection);
         expect(keysCommand).toHaveBeenCalledWith(reply, connection);
     });
 
-    it('writeErrorForUnknownCommand', () => {
+    test('writeErrorForUnknownCommand', () => {
         const reply = ['unknown'];
         returnReply(reply, connection);
         expect(writeError).toHaveBeenCalledWith(connection, 'ERR cmd not found');
@@ -60,7 +60,7 @@ describe('returnReply', () => {
 });
 
 describe('returnError', () => {
-    it('writeErrorWithProvidedError', () => {
+    test('writeErrorWithProvidedError', () => {
         const connection = {
             write: jest.fn()
         };
